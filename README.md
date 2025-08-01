@@ -1,102 +1,108 @@
-<html lang="th">
+<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>ร้านสนับสนุนบริจาค</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ร้านค้าออนไลน์</title>
   <style>
     body {
-      background-color: #304674;
-      color: white;
-      font-family: sans-serif;
-      margin: 0;
+      background: #f5f5f5;
+      font-family: Arial;
+      color: #333;
       padding: 20px;
     }
-    h1 {
-      text-align: center;
-      margin-bottom: 30px;
-    }
-    .product-grid {
+    .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
       gap: 20px;
     }
     .product {
-      background-color: #3f587e;
-      border-radius: 8px;
+      background: white;
+      border-radius: 10px;
       padding: 15px;
-      text-align: center;
-      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
     }
     .product img {
       width: 100%;
       height: 200px;
       object-fit: cover;
-      border-radius: 4px;
-      margin-bottom: 10px;
-    }
-    .product h3 {
-      margin: 10px 0 5px;
-    }
-    .product p {
-      margin: 5px 0;
-    }
-    .buy-button {
-      margin-top: 10px;
-      padding: 10px 20px;
-      background-color: #00cc66;
-      color: white;
-      border: none;
       border-radius: 5px;
-      cursor: pointer;
     }
-    .buy-button:hover {
-      background-color: #00b359;
+    .btn {
+      background: #ff5722;
+      color: white;
+      padding: 8px 15px;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    .order-form {
+      margin-top: 10px;
+    }
+    input, textarea {
+      width: 100%;
+      margin-top: 5px;
+      padding: 8px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
     }
   </style>
 </head>
 <body>
+  <h1>ร้านค้าออนไลน์</h1>
+  <div class="grid" id="productGrid"></div>
 
-<h1>สินค้าสำหรับสนับสนุนการบริจาค</h1>
-<div class="product-grid" id="product-list">
-  <p>กำลังโหลดสินค้า...</p>
-</div>
+  <script>
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbwlXpuYEHI_s9_3iFAHtfOeDFQQi3ji8WEvejjEVJeXo-8t07GSrasiiY3FF4HjAzXa/exec';
 
-<script>
-  const scriptURL = "https://script.google.com/macros/s/AKfycbzaaXAIygOjPHupnN5pgoOLESeOiX9GNbD2mjop0qJdnQby8SXQBarjo7dtfS8NXsHl/exec";
-
-  async function loadProducts() {
-    try {
-      const res = await fetch(scriptURL);
-      const products = await res.json();
-
-      const container = document.getElementById("product-list");
-      container.innerHTML = ""; // เคลียร์ข้อความ "กำลังโหลด"
-
-      if (!Array.isArray(products) || products.length === 0) {
-        container.innerHTML = "<p>ไม่พบรายการสินค้า</p>";
-        return;
-      }
-
-      products.forEach(p => {
-        const div = document.createElement("div");
-        div.className = "product";
-        div.innerHTML = `
-          <img src="${p.Image}" alt="${p.Name}">
-          <h3>${p.Name}</h3>
-          <p>${p.Description || ''}</p>
-          <p><strong style="color:#00ff99;">${p.Price} ${p.Currency || 'LAK'}</strong></p>
-          <button class="buy-button" onclick="alert('กรุณาติดต่อเพื่อสั่งซื้อ: ${p.Name}')">สั่งซื้อ</button>
-        `;
-        container.appendChild(div);
+    fetch(scriptURL)
+      .then(res => res.json())
+      .then(data => {
+        const grid = document.getElementById('productGrid');
+        data.forEach(item => {
+          const card = document.createElement('div');
+          card.className = 'product';
+          card.innerHTML = `
+            <img src="${item.pictures}" alt="${item.Name}">
+            <h3>${item.Name}</h3>
+            <p>${item.Description}</p>
+            <strong>${item.price} ກີບ</strong>
+            <form class="order-form" onsubmit="submitOrder(event, '${item.Name}', '${item.price}')">
+              <input type="text" name="name" placeholder="ชื่อผู้รับ" required>
+              <input type="text" name="phone" placeholder="เบอร์โทร" required>
+              <textarea name="address" placeholder="ที่อยู่จัดส่ง" required></textarea>
+              <input type="url" name="imageURL" placeholder="แนบลิงก์รูปสลิป (ถ้ามี)">
+              <button class="btn">สั่งซื้อ</button>
+            </form>
+          `;
+          grid.appendChild(card);
+        });
       });
-    } catch (err) {
-      console.error("โหลดสินค้าไม่สำเร็จ:", err);
-      document.getElementById("product-list").innerHTML = "<p style='color:red;'>เกิดข้อผิดพลาดในการโหลดข้อมูลสินค้า</p>";
+
+    function submitOrder(event, product, price) {
+      event.preventDefault();
+      const form = event.target;
+      const data = {
+        product,
+        price,
+        name: form.name.value,
+        phone: form.phone.value,
+        address: form.address.value,
+        imageURL: form.imageURL.value
+      };
+
+      fetch(scriptURL, {
+        method: 'POST',
+        body: JSON.stringify(data),
+        headers: { 'Content-Type': 'application/json' }
+      })
+      .then(res => res.json())
+      .then(res => {
+        if (res.status === 'success') {
+          alert('บันทึกคำสั่งซื้อเรียบร้อย!');
+          form.reset();
+        }
+      });
     }
-  }
-
-  loadProducts();
-</script>
-
+  </script>
 </body>
 </html>
