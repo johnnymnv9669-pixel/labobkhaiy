@@ -1,108 +1,101 @@
-<!DOCTYPE html>
-<html lang="en">
+<html lang="th">
 <head>
   <meta charset="UTF-8">
-  <title>Donation Shop</title>
+  <title>ร้านสนับสนุนบริจาค</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
     body {
-      background: #f0f4f8;
-      font-family: 'Segoe UI', sans-serif;
+      background-color: #304674;
+      color: white;
+      font-family: sans-serif;
       margin: 0;
       padding: 20px;
     }
     h1 {
       text-align: center;
-      color: #304674;
+      margin-bottom: 30px;
     }
-    .grid {
-      display: flex;
-      flex-wrap: wrap;
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
       gap: 20px;
-      justify-content: center;
     }
-    .item {
-      background: white;
+    .product {
+      background-color: #3f587e;
       border-radius: 8px;
-      width: 280px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      overflow: hidden;
+      padding: 15px;
       text-align: center;
-      padding-bottom: 15px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
     }
-    .item img {
+    .product img {
       width: 100%;
       height: 200px;
       object-fit: cover;
+      border-radius: 4px;
+      margin-bottom: 10px;
     }
-    .item h3 {
+    .product h3 {
       margin: 10px 0 5px;
     }
-    .item p {
+    .product p {
       margin: 5px 0;
-      font-weight: bold;
-      color: #27ae60;
     }
-    .btn {
-      background: #3490dc;
+    .buy-button {
+      margin-top: 10px;
+      padding: 10px 20px;
+      background-color: #00cc66;
       color: white;
-      padding: 8px 16px;
       border: none;
       border-radius: 5px;
-      margin-top: 10px;
       cursor: pointer;
     }
-    .btn:hover {
-      background: #2779bd;
+    .buy-button:hover {
+      background-color: #00b359;
     }
   </style>
 </head>
 <body>
 
-<h1>🛍️ ระบบขายของเพื่อการบริจาค</h1>
-<div class="grid" id="product-list">กำลังโหลดสินค้า...</div>
+<h1>สินค้าสำหรับสนับสนุนการบริจาค</h1>
+<div class="product-grid" id="product-list">
+  <p>กำลังโหลดสินค้า...</p>
+</div>
 
 <script>
-const scriptURL = 'https://docs.google.com/spreadsheets/d/1EgDB-c7XdiFhwN2U3OUhVYcB4sTT4Xz_siqUX53qkU4/edit?gid=0#gid=0';
+  const scriptURL = "https://script.google.com/macros/s/AKfycbzaaXAIygOjPHupnN5pgoOLESeOiX9GNbD2mjop0qJdnQby8SXQBarjo7dtfS8NXsHl/exec";
 
-async function loadProducts() {
-  try {
-    const res = await fetch(scriptURL);
-    const products = await res.json();
+  async function loadProducts() {
+    try {
+      const res = await fetch(scriptURL);
+      const products = await res.json();
 
-    const container = document.getElementById('product-list');
-    container.innerHTML = products.map(product => `
-      <div class="item">
-        <img src="${product.image}" alt="${product.name}">
-        <h3>${product.name}</h3>
-        <p>${product.price} บาท</p>
-        <button class="btn" onclick='buy(${JSON.stringify(product)})'>สั่งซื้อ</button>
-      </div>
-    `).join('');
-  } catch (err) {
-    document.getElementById('product-list').innerHTML = "❌ โหลดสินค้าล้มเหลว";
-    console.error(err);
+      const container = document.getElementById("product-list");
+      container.innerHTML = ""; // เคลียร์ข้อความ "กำลังโหลด"
+
+      if (!Array.isArray(products) || products.length === 0) {
+        container.innerHTML = "<p>ไม่พบรายการสินค้า</p>";
+        return;
+      }
+
+      products.forEach(p => {
+        const div = document.createElement("div");
+        div.className = "product";
+        div.innerHTML = `
+          <img src="${p.Image}" alt="${p.Name}">
+          <h3>${p.Name}</h3>
+          <p>${p.Description || ''}</p>
+          <p><strong style="color:#00ff99;">${p.Price} ${p.Currency || 'LAK'}</strong></p>
+          <button class="buy-button" onclick="alert('กรุณาติดต่อเพื่อสั่งซื้อ: ${p.Name}')">สั่งซื้อ</button>
+        `;
+        container.appendChild(div);
+      });
+    } catch (err) {
+      console.error("โหลดสินค้าไม่สำเร็จ:", err);
+      document.getElementById("product-list").innerHTML = "<p style='color:red;'>เกิดข้อผิดพลาดในการโหลดข้อมูลสินค้า</p>";
+    }
   }
-}
 
-function buy(product) {
-  const name = prompt(กรุณาใส่ชื่อของคุณเพื่อสั่งซื้อ "${product.name}");
-  if (!name) return;
-
-  fetch(scriptURL, {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({
-      name,
-      productId: product.id,
-      amount: product.price
-    })
-  })
-  .then(res => res.text())
-  .then(res => alert("✅ บันทึกคำสั่งซื้อเรียบร้อย!"))
-  .catch(err => alert("❌ มีข้อผิดพลาด กรุณาลองใหม่"));
-}
-
-loadProducts();
+  loadProducts();
 </script>
 
 </body>
