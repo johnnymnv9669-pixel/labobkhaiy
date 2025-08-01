@@ -62,7 +62,7 @@
 <div class="grid" id="product-list">กำลังโหลดสินค้า...</div>
 
 <script>
-const scriptURL = 'https://script.google.com/macros/s/AKfycbyVJWAiUAiIFsm7oL_-pCXz6p6jCHSCVQCNNNDW4PKUwVYTcQpJD-XlHHZHVs8caAWh/exec';
+const scriptURL = 'https://docs.google.com/spreadsheets/d/1EgDB-c7XdiFhwN2U3OUhVYcB4sTT4Xz_siqUX53qkU4/edit?gid=0#gid=0';
 
 async function loadProducts() {
   try {
